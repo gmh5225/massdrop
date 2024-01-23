@@ -180,9 +180,9 @@ abstract contract MassDropERC721 is BaseERC721, Initializable, Clone {
             }
         }
     }
-
+    
     function _safeBalanceOf(address owner)
-        public
+        internal
         view
         virtual
         returns (uint256 balance)
