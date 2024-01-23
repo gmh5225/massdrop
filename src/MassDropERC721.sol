@@ -14,7 +14,7 @@ abstract contract MassDropERC721 is BaseERC721, Initializable, Clone {
 
     mapping(uint256 id => bytes32 data) internal _tokenData;
 
-    mapping(address owner => uint256 balance) internal  _accountData;
+    mapping(address owner => uint256 balance) internal _accountData;
 
     /// -----------------------------------------------------------------------
     /// Immutables
@@ -85,7 +85,7 @@ abstract contract MassDropERC721 is BaseERC721, Initializable, Clone {
         virtual
         override
     {
-        if (!(from == ownerOf(id))) revert WRONG_FROM();
+        if (!from == ownerOf(id)) revert WRONG_FROM();
 
         if (to == address(0)) revert INVALID_RECIPIENT();
 
@@ -101,21 +101,19 @@ abstract contract MassDropERC721 is BaseERC721, Initializable, Clone {
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
         unchecked {
-            if (id >= _INITIAL_HOLDERS_LENGTH()) {
-                 _accountData[from]--;
+            bytes32 tokenData = _tokenData[id];
+
+            bool neverSent = tokenData[0] == 0;
+
+            if (neverSent && id < _INITIAL_HOLDERS_LENGTH()) {
+                _tokenData[id] = _setLeadingByte(bytes32(bytes20(to)), 0xFF);
+            } else {
+                _tokenData[id] = bytes32(bytes20(to));
+                _accountData[from]--;
             }
-             _accountData[to]++;
         }
 
-        bytes32 tokenData = _tokenData[id];
-
-        bool neverSent = tokenData[0] == 0;
-
-        if (neverSent && id < _INITIAL_HOLDERS_LENGTH()) {
-            _tokenData[id] = _setLeadingByte(bytes32(bytes20(to)), 0x01);
-        } else {
-            _tokenData[id] = bytes32(bytes20(to));
-        }
+        _accountData[to]++;
 
         delete getApproved[id];
 
@@ -196,8 +194,8 @@ abstract contract MassDropERC721 is BaseERC721, Initializable, Clone {
 
         unchecked {
             return neverSent && found
-                ?  _accountData[owner] + 1
-                :  _accountData[owner];
+                ? _accountData[owner] + 1
+                : _accountData[owner];
         }
     }
 
@@ -254,9 +252,9 @@ abstract contract MassDropERC721 is BaseERC721, Initializable, Clone {
 
         // Counter overflow is incredibly unrealistic.
         unchecked {
-             _accountData[to]++;
+            _accountData[to]++;
         }
-        
+
         _tokenData[id] = bytes32(bytes20(to));
 
         emit Transfer(address(0), to, id);
@@ -271,7 +269,7 @@ abstract contract MassDropERC721 is BaseERC721, Initializable, Clone {
 
         // Ownership check above ensures no underflow.
         unchecked {
-             _accountData[owner]--;
+            _accountData[owner]--;
         }
 
         delete _tokenData[id];
