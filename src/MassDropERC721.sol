@@ -85,7 +85,7 @@ abstract contract MassDropERC721 is BaseERC721, Initializable, Clone {
         virtual
         override
     {
-        if (!from == ownerOf(id)) revert WRONG_FROM();
+        if (!(from == ownerOf(id))) revert WRONG_FROM();
 
         if (to == address(0)) revert INVALID_RECIPIENT();
 
