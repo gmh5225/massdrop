@@ -18,6 +18,8 @@ abstract contract BaseERC721 {
 
     error ALREADY_MINTED();
 
+    error UNSAFE_RECIPIENT();
+
     error INVALID_RECIPIENT();
 
     /// -----------------------------------------------------------------------
@@ -81,14 +83,7 @@ abstract contract BaseERC721 {
         virtual
     {
         transferFrom(from, to, id);
-
-        require(
-            to.code.length == 0
-                || ERC721TokenReceiver(to).onERC721Received(
-                    msg.sender, from, id, ""
-                ) == ERC721TokenReceiver.onERC721Received.selector,
-            "UNSAFE_RECIPIENT"
-        );
+        _checkOnERC721Received(msg.sender, from, to, id, "");
     }
 
     function safeTransferFrom(
@@ -98,14 +93,43 @@ abstract contract BaseERC721 {
         bytes calldata data
     ) public virtual {
         transferFrom(from, to, id);
+        _checkOnERC721Received(msg.sender, from, to, id, data);
+    }
 
-        require(
-            to.code.length == 0
-                || ERC721TokenReceiver(to).onERC721Received(
-                    msg.sender, from, id, data
-                ) == ERC721TokenReceiver.onERC721Received.selector,
-            "UNSAFE_RECIPIENT"
-        );
+    /// -----------------------------------------------------------------------
+    /// ERC-721 Helpers
+    /// -----------------------------------------------------------------------
+
+    function _mint(address to, uint256 id) internal virtual;
+
+    function _burn(uint256 id) internal virtual;
+
+    function _safeMint(address to, uint256 id) internal virtual {
+        _mint(to, id);
+        _checkOnERC721Received(msg.sender, address(0), to, id, "");
+    }
+
+    function _safeMint(address to, uint256 id, bytes memory data)
+        internal
+        virtual
+    {
+        _mint(to, id);
+        _checkOnERC721Received(msg.sender, address(0), to, id, data);
+    }
+
+    function _checkOnERC721Received(
+        address operator,
+        address from,
+        address to,
+        uint256 id,
+        bytes memory data
+    ) internal virtual {
+        if (
+            to.code.length != 0
+                && ERC721TokenReceiver(to).onERC721Received(
+                    operator, from, id, data
+                ) != ERC721TokenReceiver.onERC721Received.selector
+        ) revert UNSAFE_RECIPIENT();
     }
 
     /// -----------------------------------------------------------------------
@@ -117,56 +141,6 @@ abstract contract BaseERC721 {
     function symbol() public view virtual returns (string memory);
 
     function tokenURI(uint256 id) public view virtual returns (string memory);
-
-    /// -----------------------------------------------------------------------
-    /// ERC-165
-    /// -----------------------------------------------------------------------
-
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        returns (bool)
-    {
-        return interfaceId == 0x01ffc9a7 // ERC165 Interface ID for ERC165
-            || interfaceId == 0x80ac58cd // ERC165 Interface ID for ERC721
-            || interfaceId == 0x5b5e139f; // ERC165 Interface ID for ERC721Metadata
-    }
-
-    /// -----------------------------------------------------------------------
-    /// ERC-721 Mint/Burn Helpers
-    /// -----------------------------------------------------------------------
-
-    function _mint(address to, uint256 id) internal virtual;
-
-    function _burn(uint256 id) internal virtual;
-
-    function _safeMint(address to, uint256 id) internal virtual {
-        _mint(to, id);
-
-        require(
-            to.code.length == 0
-                || ERC721TokenReceiver(to).onERC721Received(
-                    msg.sender, address(0), id, ""
-                ) == ERC721TokenReceiver.onERC721Received.selector,
-            "UNSAFE_RECIPIENT"
-        );
-    }
-
-    function _safeMint(address to, uint256 id, bytes memory data)
-        internal
-        virtual
-    {
-        _mint(to, id);
-
-        require(
-            to.code.length == 0
-                || ERC721TokenReceiver(to).onERC721Received(
-                    msg.sender, address(0), id, data
-                ) == ERC721TokenReceiver.onERC721Received.selector,
-            "UNSAFE_RECIPIENT"
-        );
-    }
 }
 
 /// @notice A generic interface for a contract which properly accepts ERC721 tokens.
