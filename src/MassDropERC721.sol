@@ -12,7 +12,7 @@ abstract contract MassDropERC721 is BaseERC721, Clone {
     /// Constants
     /// -----------------------------------------------------------------------
 
-    uint256 internal constant _ADDRESS_SIZE = 0x14;
+    uint8 internal constant _ADDRESS_SIZE = 0x14;
 
     /// -----------------------------------------------------------------------
     /// Immutables
@@ -55,7 +55,7 @@ abstract contract MassDropERC721 is BaseERC721, Clone {
         returns (address owner)
     {
         unchecked {
-            uint256 start = id * 0x14;
+            uint256 start = id * _ADDRESS_SIZE;
 
             bytes32 tokenData = _tokenData[id];
 
@@ -87,8 +87,9 @@ abstract contract MassDropERC721 is BaseERC721, Clone {
         override
         returns (uint256 balance)
     {
-        (bool found, uint256 index) =
-            _searchSorted(_INITIAL_HOLDERS_POINTER(), uint160(owner), 0x14);
+        (bool found, uint256 index) = _searchSorted(
+            _INITIAL_HOLDERS_POINTER(), uint160(owner), _ADDRESS_SIZE
+        );
 
         bool neverSent = _tokenData[index] == 0;
 
