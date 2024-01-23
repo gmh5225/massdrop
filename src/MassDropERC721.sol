@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0;
 
 import {Clone, SSTORE2, Initializable} from "lib/solady/src/Milady.sol";
