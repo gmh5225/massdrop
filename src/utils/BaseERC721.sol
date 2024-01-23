@@ -68,7 +68,7 @@ abstract contract BaseERC721 is Initializable {
         view
         virtual
         returns (uint256 result);
-        
+
     /// -----------------------------------------------------------------------
     /// Setup
     /// -----------------------------------------------------------------------
@@ -210,8 +210,8 @@ abstract contract BaseERC721 is Initializable {
 
     function _searchSorted(address pointer, uint256 needle, uint8 size)
         internal
-        virtual
         view
+        virtual
         returns (bool found, uint256 index)
     {
         unchecked {
@@ -242,8 +242,8 @@ abstract contract BaseERC721 is Initializable {
 
     function _setLeadingByte(bytes32 data, uint8 b)
         internal
-        virtual
         pure
+        virtual
         returns (bytes32 result)
     {
         /// @solidity memory-safe-assembly

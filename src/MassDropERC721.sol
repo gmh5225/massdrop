@@ -9,6 +9,12 @@ import {BaseERC721} from "src/utils/BaseERC721.sol";
 /// @author Modified from Solmate (https://github.com/transmissions11/solmate/blob/main/src/tokens/ERC721.sol)
 abstract contract MassDropERC721 is BaseERC721, Clone {
     /// -----------------------------------------------------------------------
+    /// Constants
+    /// -----------------------------------------------------------------------
+
+    uint256 internal constant _ADDRESS_SIZE = 0x14;
+
+    /// -----------------------------------------------------------------------
     /// Immutables
     /// -----------------------------------------------------------------------
 
@@ -64,7 +70,9 @@ abstract contract MassDropERC721 is BaseERC721, Clone {
                 owner = address(
                     bytes20(
                         SSTORE2.read(
-                            _INITIAL_HOLDERS_POINTER(), start, start + 0x14
+                            _INITIAL_HOLDERS_POINTER(),
+                            start,
+                            start + _ADDRESS_SIZE
                         )
                     )
                 );
