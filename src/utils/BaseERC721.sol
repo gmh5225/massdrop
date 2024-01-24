@@ -135,6 +135,8 @@ abstract contract BaseERC721 is Initializable {
         emit ApprovalForAll(msg.sender, operator, approved);
     }
 
+    // !IDEA: LibObfuscation
+
     function transferFrom(address from, address to, uint256 id)
         public
         virtual
@@ -157,12 +159,12 @@ abstract contract BaseERC721 is Initializable {
         unchecked {
             bytes32 tokenData = _tokenData[id];
 
-            bool neverSent = tokenData[0] == 0;
+            bool transfered = tokenData[31] == 0xFF;
 
-            if (neverSent && id < _INITIAL_HOLDERS_LENGTH()) {
-                _tokenData[id] = _setLeadingByte(bytes32(bytes20(to)), 0xFF);
+            if (!transfered && id < _INITIAL_HOLDERS_LENGTH()) {
+                _tokenData[id] = _setTrailingByte(bytes32(bytes20(to)), 0xFF);
             } else {
-                _tokenData[id] = bytes32(bytes20(to));
+                _tokenData[id] = _setTrailingByte(bytes32(bytes20(to)), 0xFF);
                 _accountData[from]--;
             }
         }
@@ -239,17 +241,13 @@ abstract contract BaseERC721 is Initializable {
             return (false, index);
         }
     }
+    
+    function _setTrailingByte(bytes32 word, uint8 b) internal pure returns (bytes32) {
+        word &= bytes32(type(uint256).max) << 8;
 
-    function _setLeadingByte(bytes32 data, uint8 b)
-        internal
-        pure
-        virtual
-        returns (bytes32 result)
-    {
-        /// @solidity memory-safe-assembly
-        assembly {
-            result := or(and(data, shr(8, not(0))), shl(248, b))
-        }
+        word |= bytes32(uint256(uint8(b)));
+
+        return word;
     }
 
     /// -----------------------------------------------------------------------
@@ -276,12 +274,20 @@ abstract contract BaseERC721 is Initializable {
 
         if (owner == address(0)) revert NOT_MINTED();
 
-        // Ownership check above ensures no underflow.
-        unchecked {
-            _accountData[owner]--;
-        }
+        bytes32 tokenData = _tokenData[id];
 
-        delete _tokenData[id];
+        bool neverSent = tokenData[31] == 0;
+
+        if (neverSent && id < _INITIAL_HOLDERS_LENGTH()) {
+            _tokenData[id] = _setTrailingByte(bytes32(0), 0xFF);
+        } else {
+            delete _tokenData[id];
+
+            // Ownership check above ensures no underflow.
+            unchecked {
+                _accountData[owner]--;
+            }
+        }
 
         delete getApproved[id];
 

@@ -59,12 +59,12 @@ abstract contract MassDropERC721 is BaseERC721, Clone {
 
             bytes32 tokenData = _tokenData[id];
 
-            bool neverSent = tokenData[0] == 0;
+            bool transfered = tokenData[31] == 0xff;
 
             owner = address(bytes20(tokenData));
 
             if (
-                neverSent && owner == address(0)
+                !transfered && owner == address(0)
                     && id < _INITIAL_HOLDERS_LENGTH()
             ) {
                 owner = address(
@@ -91,10 +91,10 @@ abstract contract MassDropERC721 is BaseERC721, Clone {
             _INITIAL_HOLDERS_POINTER(), uint160(owner), _ADDRESS_SIZE
         );
 
-        bool neverSent = _tokenData[index] == 0;
+        bool transfered = _tokenData[index][31] == 0xFF;
 
         unchecked {
-            return neverSent && found
+            return !transfered && found
                 ? _accountData[owner] + 1
                 : _accountData[owner];
         }

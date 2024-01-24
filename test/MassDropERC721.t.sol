@@ -37,6 +37,37 @@ contract MassDropERC721Test is Test {
     }
 
     /// -----------------------------------------------------------------------
+    /// Massdrop Unit
+    /// -----------------------------------------------------------------------
+
+    function testInitialReMint() public {
+        n.burn(999);
+        n.mint(addr(1), 999);
+        assertEq(n.balanceOf(addr(1)), 2);
+        assertEq(n.ownerOf(999), addr(1));
+    }
+
+    function testInitialBurn() public {
+        n.burn(999);
+        assertEq(n.balanceOf(addr(1000)), 0);
+    }
+
+    function testOwnerOfInitialNotMinted() public {
+        n.burn(999);
+        vm.expectRevert(BaseERC721.NOT_MINTED.selector);
+        n.ownerOf(999);
+    }
+
+    function testInitialTransferFrom() public {
+        vm.prank(addr(1));
+        n.transferFrom(addr(1), addr(2), 0);
+        assertEq(n.getApproved(0), address(0));
+        assertEq(n.ownerOf(0), addr(2));
+        assertEq(n.balanceOf(addr(2)), 2);
+        assertEq(n.balanceOf(addr(1)), 0);
+    }
+
+    /// -----------------------------------------------------------------------
     /// Unit
     /// -----------------------------------------------------------------------
 
@@ -270,7 +301,7 @@ contract MassDropERC721Test is Test {
         n.mint(address(0xBEEF), 1001);
     }
 
-    function testBurnUnMinted() public {
+    function testBurnNotMinted() public {
         vm.expectRevert(BaseERC721.NOT_MINTED.selector);
         n.burn(1001);
     }
@@ -282,7 +313,7 @@ contract MassDropERC721Test is Test {
         n.burn(1001);
     }
 
-    function testApproveUnMinted() public {
+    function testApproveNotMinted() public {
         vm.expectRevert(BaseERC721.NOT_MINTED.selector);
         n.approve(address(0xBEEF), 1001);
     }
@@ -321,7 +352,7 @@ contract MassDropERC721Test is Test {
         n.balanceOf(address(0));
     }
 
-    function testOwnerOfUnminted() public {
+    function testOwnerOfNotMinted() public {
         vm.expectRevert(BaseERC721.NOT_MINTED.selector);
         n.ownerOf(1001);
     }
@@ -346,7 +377,7 @@ contract MassDropERC721Test is Test {
         n.mint(to, id);
     }
 
-    function testBurnUnMinted(uint248 id) public {
+    function testBurnNotMinted(uint248 id) public {
         vm.assume(id > 1000);
         vm.expectRevert(BaseERC721.NOT_MINTED.selector);
         n.burn(id);
@@ -363,7 +394,7 @@ contract MassDropERC721Test is Test {
         n.burn(id);
     }
 
-    function testApproveUnMinted(uint248 key, uint248 id) public {
+    function testApproveNotMinted(uint248 key, uint248 id) public {
         vm.assume(key > 1000);
         vm.assume(id > 1000);
         address to = vm.addr(key);
@@ -433,7 +464,7 @@ contract MassDropERC721Test is Test {
         n.transferFrom(from, to, id);
     }
 
-    function testOwnerOfUnminted(uint248 id) public {
+    function testOwnerOfNotMinted(uint248 id) public {
         vm.assume(id > 1000);
         vm.expectRevert(BaseERC721.NOT_MINTED.selector);
         n.ownerOf(id);
