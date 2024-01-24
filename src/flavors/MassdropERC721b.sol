@@ -5,22 +5,48 @@ import {Clone, SSTORE2} from "lib/solady/src/Milady.sol";
 
 import {MassDropERC721} from "src/MassDropERC721.sol";
 
+import {MassDropRegistry} from "src/MassDropRegistry.sol";
+
 abstract contract MassDropERC721b is MassDropERC721, Clone {
     /// -----------------------------------------------------------------------
     /// Constants
     /// -----------------------------------------------------------------------
 
-    uint8 internal constant _ADDRESS_INDEX_SIZE = 0x02;
+    uint8 internal constant _ADDRESS_INDEX_SIZE = 0x03;
+
+    /// -----------------------------------------------------------------------
+    /// Setup
+    /// -----------------------------------------------------------------------
+
+    function initialize(bytes calldata addresses)
+        external
+        virtual
+        initializer
+    {
+        unchecked {
+            uint256 n = addresses.length / _ADDRESS_INDEX_SIZE;
+            for (uint256 i; i < n; ++i) {
+                uint256 o = i * _ADDRESS_INDEX_SIZE;
+                emit Transfer(
+                    address(0),
+                    address(
+                        accountRegistry().ownerOf(
+                            uint24(bytes3(addresses[o:o + _ADDRESS_INDEX_SIZE]))
+                        )
+                    ),
+                    i
+                );
+            }
+        }
+    }
 
     /// -----------------------------------------------------------------------
     /// Immutables
     /// -----------------------------------------------------------------------
 
-    function accountRegistery()
-        public
-        pure
-        virtual
-        returns (IAccountRegistery);
+    function accountRegistry() public pure virtual returns (MassDropRegistry) {
+        return MassDropRegistry(payable(_getArgAddress(0x00)));
+    }
 
     function genesisMintersPointer()
         public
@@ -29,7 +55,7 @@ abstract contract MassDropERC721b is MassDropERC721, Clone {
         override
         returns (address)
     {
-        return _getArgAddress(0x00);
+        return _getArgAddress(0x14);
     }
 
     function totalGenesisMinters()
@@ -56,7 +82,7 @@ abstract contract MassDropERC721b is MassDropERC721, Clone {
     {
         (bool found,) = _searchSorted(
             genesisMintersPointer(),
-            accountRegistery().indexOf(owner),
+            accountRegistry().indexOf(owner),
             _ADDRESS_INDEX_SIZE
         );
 
@@ -86,9 +112,9 @@ abstract contract MassDropERC721b is MassDropERC721, Clone {
             if (
                 !transfered && owner == address(0) && id < totalGenesisMinters()
             ) {
-                owner = accountRegistery().ownerOf(
-                    uint160(
-                        bytes20(
+                owner = accountRegistry().ownerOf(
+                    uint24(
+                        bytes3(
                             SSTORE2.read(
                                 genesisMintersPointer(),
                                 start,
@@ -110,7 +136,7 @@ abstract contract MassDropERC721b is MassDropERC721, Clone {
     {
         (bool found, uint256 index) = _searchSorted(
             genesisMintersPointer(),
-            accountRegistery().indexOf(owner),
+            accountRegistry().indexOf(owner),
             _ADDRESS_INDEX_SIZE
         );
 
@@ -122,13 +148,4 @@ abstract contract MassDropERC721b is MassDropERC721, Clone {
                 : _accountData[owner];
         }
     }
-}
-
-// QUESTION: Is it possible to store these two values in the same slot?
-interface IAccountRegistery {
-    function ownerOf(uint256 index) external view returns (address owner);
-    function indexOf(address account)
-        external
-        view
-        returns (uint256 identifier);
 }

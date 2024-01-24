@@ -82,27 +82,6 @@ abstract contract MassDropERC721 is Initializable {
         returns (bool);
 
     /// -----------------------------------------------------------------------
-    /// Setup
-    /// -----------------------------------------------------------------------
-
-    function initialize(bytes calldata addresses)
-        external
-        virtual
-        initializer
-    {
-        unchecked {
-            uint256 n = addresses.length / 20;
-            for (uint256 i; i < n; ++i) {
-                emit Transfer(
-                    address(0),
-                    address(bytes20(addresses[i * 20:i * 20 + 20])),
-                    i
-                );
-            }
-        }
-    }
-
-    /// -----------------------------------------------------------------------
     /// Read-Only Accounting
     /// -----------------------------------------------------------------------
 

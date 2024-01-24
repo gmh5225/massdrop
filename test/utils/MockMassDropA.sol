@@ -5,7 +5,7 @@ import "lib/solady/src/Milady.sol";
 
 import "src/flavors/MassDropERC721a.sol";
 
-contract MockMassDropERC721 is MassDropERC721a {
+contract MockMassDropERC721a is MassDropERC721a {
     function name() public view virtual override returns (string memory) {}
 
     function symbol() public view virtual override returns (string memory) {}
@@ -38,7 +38,7 @@ contract MockMassDropERC721 is MassDropERC721a {
     }
 }
 
-contract MockMassDropERC721Factory {
+contract MockMassDropERC721aFactory {
     address public immutable implementation;
 
     constructor(address _implementation) {
@@ -48,12 +48,12 @@ contract MockMassDropERC721Factory {
     function massDrop(bytes calldata addresses)
         external
         virtual
-        returns (MockMassDropERC721 instance)
+        returns (MockMassDropERC721a instance)
     {
         unchecked {
             require(addresses.length % 20 == 0, "BAD_DATA");
 
-            instance = MockMassDropERC721(
+            instance = MockMassDropERC721a(
                 LibClone.clone(
                     implementation, abi.encodePacked(SSTORE2.write(addresses))
                 )

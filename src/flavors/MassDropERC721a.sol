@@ -15,6 +15,28 @@ abstract contract MassDropERC721a is MassDropERC721, Clone {
     uint8 internal constant _ADDRESS_SIZE = 0x14;
 
     /// -----------------------------------------------------------------------
+    /// Setup
+    /// -----------------------------------------------------------------------
+
+    function initialize(bytes calldata addresses)
+        external
+        virtual
+        initializer
+    {
+        unchecked {
+            uint256 n = addresses.length / _ADDRESS_SIZE;
+            for (uint256 i; i < n; ++i) {
+                uint256 o = i * _ADDRESS_SIZE;
+                emit Transfer(
+                    address(0),
+                    address(bytes20(addresses[o:o + _ADDRESS_SIZE])),
+                    i
+                );
+            }
+        }
+    }
+
+    /// -----------------------------------------------------------------------
     /// Immutables
     /// -----------------------------------------------------------------------
 

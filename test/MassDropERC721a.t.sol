@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import {Test, console2} from "forge-std/Test.sol";
 
-import "test/utils/MockMassDrop.sol";
+import "test/utils/MockMassDropA.sol";
 
 function addr(uint160 a) pure returns (address b) {
     assembly {
@@ -12,14 +12,14 @@ function addr(uint160 a) pure returns (address b) {
 }
 
 /// @author Modified from Solmate (htps://github.com/transmissions11/solmate/blob/main/src/test/ERC721.t.sol)
-contract MassDropERC721Test is Test {
+contract MassDropERC721aTest is Test {
     using LibSort for address[];
 
-    MockMassDropERC721 n;
-    MockMassDropERC721Factory f;
+    MockMassDropERC721a n;
+    MockMassDropERC721aFactory f;
 
     function setUp() public {
-        f = new MockMassDropERC721Factory(address(new MockMassDropERC721()));
+        f = new MockMassDropERC721aFactory(address(new MockMassDropERC721a()));
         bytes memory encoded;
         address[] memory orginalOwners = new address[](1000);
         for (uint160 i; i < 1000; ++i) {
