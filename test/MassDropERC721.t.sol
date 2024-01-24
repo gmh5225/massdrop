@@ -67,6 +67,34 @@ contract MassDropERC721Test is Test {
         assertEq(n.balanceOf(addr(1)), 0);
     }
 
+    function testInitialTransferFromSelf() public {
+        vm.prank(addr(1));
+        n.transferFrom(addr(1), addr(2), 0);
+        assertEq(n.getApproved(0), address(0));
+        assertEq(n.ownerOf(0), addr(2));
+        assertEq(n.balanceOf(addr(2)), 2);
+        assertEq(n.balanceOf(addr(1)), 0);
+    }
+
+    function testInitialTransferFromApproveAll() public {
+        vm.prank(addr(1));
+        n.setApprovalForAll(address(this), true);
+        n.transferFrom(addr(1), addr(2), 0);
+        assertEq(n.getApproved(0), address(0));
+        assertEq(n.ownerOf(0), addr(2));
+        assertEq(n.balanceOf(addr(2)), 2);
+        assertEq(n.balanceOf(addr(1)), 0);
+    }
+
+    function testInitialSafeTransferFromToEOA() public {
+        vm.prank(addr(1));
+        n.safeTransferFrom(addr(1), addr(2), 0);
+        assertEq(n.getApproved(0), address(0));
+        assertEq(n.ownerOf(0), addr(2));
+        assertEq(n.balanceOf(addr(2)), 2);
+        assertEq(n.balanceOf(addr(1)), 0);
+    }
+
     /// -----------------------------------------------------------------------
     /// Unit
     /// -----------------------------------------------------------------------
