@@ -73,7 +73,7 @@ abstract contract MassDropERC721a is MassDropERC721, Clone {
 
             bytes32 tokenData = _tokenData[id];
 
-            bool transfered = tokenData[_LAST_BYTE] == 0xff;
+            bool transfered = tokenData[_LAST_BYTE] == 0xFF;
 
             owner = address(bytes20(tokenData));
 
