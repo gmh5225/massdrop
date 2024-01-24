@@ -3,9 +3,9 @@ pragma solidity >=0.8.0;
 
 import "lib/solady/src/Milady.sol";
 
-import "src/MassDropERC721.sol";
+import "src/flavors/MassDropERC721a.sol";
 
-contract MockMassDropERC721 is MassDropERC721 {
+contract MockMassDropERC721 is MassDropERC721a {
     function name() public view virtual override returns (string memory) {}
 
     function symbol() public view virtual override returns (string memory) {}

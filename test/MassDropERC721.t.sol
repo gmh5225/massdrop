@@ -54,7 +54,7 @@ contract MassDropERC721Test is Test {
 
     function testOwnerOfInitialNotMinted() public {
         n.burn(999);
-        vm.expectRevert(BaseERC721.NOT_MINTED.selector);
+        vm.expectRevert(MassDropERC721.NOT_MINTED.selector);
         n.ownerOf(999);
     }
 
@@ -81,7 +81,7 @@ contract MassDropERC721Test is Test {
         n.mint(address(0xBEEF), 1000);
         n.burn(1000);
         assertEq(n.balanceOf(address(0xBEEF)), 0);
-        vm.expectRevert(BaseERC721.NOT_MINTED.selector);
+        vm.expectRevert(MassDropERC721.NOT_MINTED.selector);
         n.ownerOf(1000);
     }
 
@@ -97,7 +97,7 @@ contract MassDropERC721Test is Test {
         n.burn(1000);
         assertEq(n.balanceOf(address(this)), 0);
         assertEq(n.getApproved(1000), address(0));
-        vm.expectRevert(BaseERC721.NOT_MINTED.selector);
+        vm.expectRevert(MassDropERC721.NOT_MINTED.selector);
         n.ownerOf(1000);
     }
 
@@ -177,7 +177,7 @@ contract MassDropERC721Test is Test {
         n.mint(to, id);
         n.burn(id);
         assertEq(n.balanceOf(to), 0);
-        vm.expectRevert(BaseERC721.NOT_MINTED.selector);
+        vm.expectRevert(MassDropERC721.NOT_MINTED.selector);
         n.ownerOf(id);
     }
 
@@ -199,7 +199,7 @@ contract MassDropERC721Test is Test {
         n.burn(id);
         assertEq(n.balanceOf(address(this)), 0);
         assertEq(n.getApproved(id), address(0));
-        vm.expectRevert(BaseERC721.NOT_MINTED.selector);
+        vm.expectRevert(MassDropERC721.NOT_MINTED.selector);
         n.ownerOf(id);
     }
 
@@ -291,69 +291,69 @@ contract MassDropERC721Test is Test {
     /// -----------------------------------------------------------------------
 
     function testMintToZero() public {
-        vm.expectRevert(BaseERC721.INVALID_RECIPIENT.selector);
+        vm.expectRevert(MassDropERC721.INVALID_RECIPIENT.selector);
         n.mint(address(0), 1001);
     }
 
     function testDoubleMint() public {
         n.mint(address(0xBEEF), 1001);
-        vm.expectRevert(BaseERC721.ALREADY_MINTED.selector);
+        vm.expectRevert(MassDropERC721.ALREADY_MINTED.selector);
         n.mint(address(0xBEEF), 1001);
     }
 
     function testBurnNotMinted() public {
-        vm.expectRevert(BaseERC721.NOT_MINTED.selector);
+        vm.expectRevert(MassDropERC721.NOT_MINTED.selector);
         n.burn(1001);
     }
 
     function testDoubleBurn() public {
         n.mint(address(0xBEEF), 1001);
         n.burn(1001);
-        vm.expectRevert(BaseERC721.NOT_MINTED.selector);
+        vm.expectRevert(MassDropERC721.NOT_MINTED.selector);
         n.burn(1001);
     }
 
     function testApproveNotMinted() public {
-        vm.expectRevert(BaseERC721.NOT_MINTED.selector);
+        vm.expectRevert(MassDropERC721.NOT_MINTED.selector);
         n.approve(address(0xBEEF), 1001);
     }
 
     function testApproveUnAuthorized() public {
         n.mint(address(0xCAFE), 1001);
-        vm.expectRevert(BaseERC721.NOT_AUTHORIZED.selector);
+        vm.expectRevert(MassDropERC721.NOT_AUTHORIZED.selector);
         n.approve(address(0xBEEF), 1001);
     }
 
     function testTransferFromUnOwned() public {
-        vm.expectRevert(BaseERC721.NOT_MINTED.selector);
+        vm.expectRevert(MassDropERC721.NOT_MINTED.selector);
         n.transferFrom(address(0xFEED), address(0xBEEF), 1001);
     }
 
     function testTransferFromWrongFrom() public {
         n.mint(address(0xCAFE), 1001);
-        vm.expectRevert(BaseERC721.WRONG_FROM.selector);
+        vm.expectRevert(MassDropERC721.WRONG_FROM.selector);
         n.transferFrom(address(0xFEED), address(0xBEEF), 1001);
     }
 
     function testTransferFromToZero() public {
         n.mint(address(this), 1001);
-        vm.expectRevert(BaseERC721.INVALID_RECIPIENT.selector);
+        vm.expectRevert(MassDropERC721.INVALID_RECIPIENT.selector);
         n.transferFrom(address(this), address(0), 1001);
     }
 
     function testTransferFromNotOwner() public {
         n.mint(address(0xFEED), 1001);
-        vm.expectRevert(BaseERC721.NOT_AUTHORIZED.selector);
+        vm.expectRevert(MassDropERC721.NOT_AUTHORIZED.selector);
         n.transferFrom(address(0xFEED), address(0xBEEF), 1001);
     }
 
     function testBalanceOfZeroAddress() public {
-        vm.expectRevert(BaseERC721.ZERO_ADDRESS.selector);
+        vm.expectRevert(MassDropERC721.ZERO_ADDRESS.selector);
         n.balanceOf(address(0));
     }
 
     function testOwnerOfNotMinted() public {
-        vm.expectRevert(BaseERC721.NOT_MINTED.selector);
+        vm.expectRevert(MassDropERC721.NOT_MINTED.selector);
         n.ownerOf(1001);
     }
 
@@ -363,7 +363,7 @@ contract MassDropERC721Test is Test {
 
     function testMintToZero(uint248 id) public {
         vm.assume(id > 1000);
-        vm.expectRevert(BaseERC721.INVALID_RECIPIENT.selector);
+        vm.expectRevert(MassDropERC721.INVALID_RECIPIENT.selector);
         n.mint(address(0), id);
     }
 
@@ -373,13 +373,13 @@ contract MassDropERC721Test is Test {
         address to = vm.addr(key);
 
         n.mint(to, id);
-        vm.expectRevert(BaseERC721.ALREADY_MINTED.selector);
+        vm.expectRevert(MassDropERC721.ALREADY_MINTED.selector);
         n.mint(to, id);
     }
 
     function testBurnNotMinted(uint248 id) public {
         vm.assume(id > 1000);
-        vm.expectRevert(BaseERC721.NOT_MINTED.selector);
+        vm.expectRevert(MassDropERC721.NOT_MINTED.selector);
         n.burn(id);
     }
 
@@ -390,7 +390,7 @@ contract MassDropERC721Test is Test {
 
         n.mint(to, id);
         n.burn(id);
-        vm.expectRevert(BaseERC721.NOT_MINTED.selector);
+        vm.expectRevert(MassDropERC721.NOT_MINTED.selector);
         n.burn(id);
     }
 
@@ -398,7 +398,7 @@ contract MassDropERC721Test is Test {
         vm.assume(key > 1000);
         vm.assume(id > 1000);
         address to = vm.addr(key);
-        vm.expectRevert(BaseERC721.NOT_MINTED.selector);
+        vm.expectRevert(MassDropERC721.NOT_MINTED.selector);
         n.approve(to, id);
     }
 
@@ -412,7 +412,7 @@ contract MassDropERC721Test is Test {
             owner = address(0xBEEF);
         }
         n.mint(owner, id);
-        vm.expectRevert(BaseERC721.NOT_AUTHORIZED.selector);
+        vm.expectRevert(MassDropERC721.NOT_AUTHORIZED.selector);
         n.approve(to, id);
     }
 
@@ -422,7 +422,7 @@ contract MassDropERC721Test is Test {
         vm.assume(key > 1000);
         vm.assume(id > 1000);
         address to = vm.addr(key);
-        vm.expectRevert(BaseERC721.NOT_MINTED.selector);
+        vm.expectRevert(MassDropERC721.NOT_MINTED.selector);
         n.transferFrom(from, to, id);
     }
 
@@ -440,14 +440,14 @@ contract MassDropERC721Test is Test {
         vm.assume(to != address(this));
         vm.assume(to != address(0));
         n.mint(owner, id);
-        vm.expectRevert(BaseERC721.WRONG_FROM.selector);
+        vm.expectRevert(MassDropERC721.WRONG_FROM.selector);
         n.transferFrom(from, to, id);
     }
 
     function testTransferFromToZero(uint248 id) public {
         vm.assume(id > 1000);
         n.mint(address(this), id);
-        vm.expectRevert(BaseERC721.INVALID_RECIPIENT.selector);
+        vm.expectRevert(MassDropERC721.INVALID_RECIPIENT.selector);
         n.transferFrom(address(this), address(0), id);
     }
 
@@ -460,13 +460,13 @@ contract MassDropERC721Test is Test {
         vm.assume(from != address(0));
         address to = vm.addr(key);
         n.mint(from, id);
-        vm.expectRevert(BaseERC721.NOT_AUTHORIZED.selector);
+        vm.expectRevert(MassDropERC721.NOT_AUTHORIZED.selector);
         n.transferFrom(from, to, id);
     }
 
     function testOwnerOfNotMinted(uint248 id) public {
         vm.assume(id > 1000);
-        vm.expectRevert(BaseERC721.NOT_MINTED.selector);
+        vm.expectRevert(MassDropERC721.NOT_MINTED.selector);
         n.ownerOf(id);
     }
 }
