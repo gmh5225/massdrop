@@ -18,8 +18,8 @@ abstract contract MassDropERC721a is MassDropERC721, Clone {
     /// Immutables
     /// -----------------------------------------------------------------------
 
-    function _INITIAL_HOLDERS_POINTER()
-        internal
+    function genesisMintersPointer()
+        public
         pure
         virtual
         override
@@ -28,19 +28,33 @@ abstract contract MassDropERC721a is MassDropERC721, Clone {
         return _getArgAddress(0x00);
     }
 
-    function _INITIAL_HOLDERS_LENGTH()
-        internal
+    function totalGenesisMinters()
+        public
         view
         virtual
         override
         returns (uint256 result)
     {
-        address pointer = _INITIAL_HOLDERS_POINTER();
+        address pointer = genesisMintersPointer();
 
         /// @solidity memory-safe-assembly
         assembly {
             result := div(sub(extcodesize(pointer), 1), 0x14)
         }
+    }
+
+    function isGenesisMinter(address owner)
+        public
+        view
+        virtual
+        override
+        returns (bool)
+    {
+        (bool found,) = _searchSorted(
+            genesisMintersPointer(), uint160(owner), _ADDRESS_SIZE
+        );
+
+        return found;
     }
 
     /// -----------------------------------------------------------------------
@@ -59,18 +73,17 @@ abstract contract MassDropERC721a is MassDropERC721, Clone {
 
             bytes32 tokenData = _tokenData[id];
 
-            bool transfered = tokenData[31] == 0xff;
+            bool transfered = tokenData[_LAST_BYTE] == 0xff;
 
             owner = address(bytes20(tokenData));
 
             if (
-                !transfered && owner == address(0)
-                    && id < _INITIAL_HOLDERS_LENGTH()
+                !transfered && owner == address(0) && id < totalGenesisMinters()
             ) {
                 owner = address(
                     bytes20(
                         SSTORE2.read(
-                            _INITIAL_HOLDERS_POINTER(),
+                            genesisMintersPointer(),
                             start,
                             start + _ADDRESS_SIZE
                         )
@@ -88,10 +101,10 @@ abstract contract MassDropERC721a is MassDropERC721, Clone {
         returns (uint256 balance)
     {
         (bool found, uint256 index) = _searchSorted(
-            _INITIAL_HOLDERS_POINTER(), uint160(owner), _ADDRESS_SIZE
+            genesisMintersPointer(), uint160(owner), _ADDRESS_SIZE
         );
 
-        bool transfered = _tokenData[index][31] == 0xFF;
+        bool transfered = _tokenData[index][_LAST_BYTE] == 0xFF;
 
         unchecked {
             return !transfered && found

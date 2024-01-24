@@ -22,8 +22,8 @@ abstract contract MassDropERC721b is MassDropERC721, Clone {
         virtual
         returns (IAccountRegistery);
 
-    function _INITIAL_HOLDERS_POINTER()
-        internal
+    function genesisMintersPointer()
+        public
         pure
         virtual
         override
@@ -32,19 +32,35 @@ abstract contract MassDropERC721b is MassDropERC721, Clone {
         return _getArgAddress(0x00);
     }
 
-    function _INITIAL_HOLDERS_LENGTH()
-        internal
+    function totalGenesisMinters()
+        public
         view
         virtual
         override
         returns (uint256 result)
     {
-        address pointer = _INITIAL_HOLDERS_POINTER();
+        address pointer = genesisMintersPointer();
 
         /// @solidity memory-safe-assembly
         assembly {
             result := shr(1, sub(extcodesize(pointer), 1))
         }
+    }
+
+    function isGenesisMinter(address owner)
+        public
+        view
+        virtual
+        override
+        returns (bool)
+    {
+        (bool found,) = _searchSorted(
+            genesisMintersPointer(),
+            accountRegistery().indexOf(owner),
+            _ADDRESS_INDEX_SIZE
+        );
+
+        return found;
     }
 
     /// -----------------------------------------------------------------------
@@ -63,19 +79,18 @@ abstract contract MassDropERC721b is MassDropERC721, Clone {
 
             bytes32 tokenData = _tokenData[id];
 
-            bool transfered = tokenData[31] == 0xFF;
+            bool transfered = tokenData[_LAST_BYTE] == 0xFF;
 
             owner = address(bytes20(tokenData));
 
             if (
-                !transfered && owner == address(0)
-                    && id < _INITIAL_HOLDERS_LENGTH()
+                !transfered && owner == address(0) && id < totalGenesisMinters()
             ) {
                 owner = accountRegistery().ownerOf(
                     uint160(
                         bytes20(
                             SSTORE2.read(
-                                _INITIAL_HOLDERS_POINTER(),
+                                genesisMintersPointer(),
                                 start,
                                 start + _ADDRESS_INDEX_SIZE
                             )
@@ -94,12 +109,12 @@ abstract contract MassDropERC721b is MassDropERC721, Clone {
         returns (uint256 balance)
     {
         (bool found, uint256 index) = _searchSorted(
-            _INITIAL_HOLDERS_POINTER(),
-            accountRegistery().identifierOf(owner),
+            genesisMintersPointer(),
+            accountRegistery().indexOf(owner),
             _ADDRESS_INDEX_SIZE
         );
 
-        bool transfered = _tokenData[index][31] == 0xFF;
+        bool transfered = _tokenData[index][_LAST_BYTE] == 0xFF;
 
         unchecked {
             return !transfered && found
@@ -111,11 +126,8 @@ abstract contract MassDropERC721b is MassDropERC721, Clone {
 
 // QUESTION: Is it possible to store these two values in the same slot?
 interface IAccountRegistery {
-    function ownerOf(uint256 identifier)
-        external
-        view
-        returns (address owner);
-    function identifierOf(address owner)
+    function ownerOf(uint256 index) external view returns (address owner);
+    function indexOf(address account)
         external
         view
         returns (uint256 identifier);

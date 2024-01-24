@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.0;
 
 import {SSTORE2, Initializable} from "lib/solady/src/Milady.sol";
@@ -6,6 +6,12 @@ import {SSTORE2, Initializable} from "lib/solady/src/Milady.sol";
 /// @notice Modern, minimalist, and gas efficient ERC-721 implementation.
 /// @author Modified from Solmate (htps://github.com/transmissions11/solmate/blob/main/src/tokens/ERC721.sol)
 abstract contract MassDropERC721 is Initializable {
+    /// -----------------------------------------------------------------------
+    /// Constants
+    /// -----------------------------------------------------------------------
+
+    uint256 internal constant _LAST_BYTE = 31;
+
     /// -----------------------------------------------------------------------
     /// Errors
     /// -----------------------------------------------------------------------
@@ -53,21 +59,27 @@ abstract contract MassDropERC721 is Initializable {
     mapping(address owner => mapping(address spender => bool approved)) public
         isApprovedForAll;
 
+    function hasBeenTransfered(uint256 id) public view virtual returns (bool) {
+        return _tokenData[id][_LAST_BYTE] == 0xFF;
+    }
+
     /// -----------------------------------------------------------------------
     /// Immutables
     /// -----------------------------------------------------------------------
 
-    function _INITIAL_HOLDERS_POINTER()
-        internal
-        pure
-        virtual
-        returns (address);
+    function genesisMintersPointer() public view virtual returns (address);
 
-    function _INITIAL_HOLDERS_LENGTH()
-        internal
+    function totalGenesisMinters()
+        public
         view
         virtual
         returns (uint256 result);
+
+    function isGenesisMinter(address owner)
+        public
+        view
+        virtual
+        returns (bool);
 
     /// -----------------------------------------------------------------------
     /// Setup
@@ -135,8 +147,6 @@ abstract contract MassDropERC721 is Initializable {
         emit ApprovalForAll(msg.sender, operator, approved);
     }
 
-    // !IDEA: LibObfuscation
-
     function transferFrom(address from, address to, uint256 id)
         public
         virtual
@@ -159,9 +169,9 @@ abstract contract MassDropERC721 is Initializable {
         unchecked {
             bytes32 tokenData = _tokenData[id];
 
-            bool transfered = tokenData[31] == 0xFF;
+            bool transfered = tokenData[_LAST_BYTE] == 0xFF;
 
-            if (!transfered && id < _INITIAL_HOLDERS_LENGTH()) {
+            if (!transfered && id < totalGenesisMinters()) {
                 _tokenData[id] = _setTrailingByte(bytes32(bytes20(to)), 0xFF);
             } else {
                 _tokenData[id] = _setTrailingByte(bytes32(bytes20(to)), 0xFF);
@@ -217,7 +227,7 @@ abstract contract MassDropERC721 is Initializable {
         returns (bool found, uint256 index)
     {
         unchecked {
-            uint256 length = _INITIAL_HOLDERS_LENGTH();
+            uint256 length = totalGenesisMinters();
             uint256 h = length;
             uint256 l = 0;
 
@@ -280,9 +290,9 @@ abstract contract MassDropERC721 is Initializable {
 
         bytes32 tokenData = _tokenData[id];
 
-        bool neverSent = tokenData[31] == 0;
+        bool transfered = tokenData[_LAST_BYTE] == 0xFF;
 
-        if (neverSent && id < _INITIAL_HOLDERS_LENGTH()) {
+        if (!transfered && id < totalGenesisMinters()) {
             _tokenData[id] = _setTrailingByte(bytes32(0), 0xFF);
         } else {
             delete _tokenData[id];
