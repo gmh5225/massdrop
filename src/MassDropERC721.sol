@@ -241,8 +241,12 @@ abstract contract MassDropERC721 is Initializable {
             return (false, index);
         }
     }
-    
-    function _setTrailingByte(bytes32 word, uint8 b) internal pure returns (bytes32) {
+
+    function _setTrailingByte(bytes32 word, uint8 b)
+        internal
+        pure
+        returns (bytes32)
+    {
         word &= bytes32(type(uint256).max) << 8;
 
         word |= bytes32(uint256(uint8(b)));
